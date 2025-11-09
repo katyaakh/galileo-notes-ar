@@ -43,24 +43,40 @@ const Index = () => {
           onCollectNotes={() => setViewMode("ar")}
         />
       )}
-      {viewMode === "map" && <MapView onSelectFolder={handleSelectFolder} />}
-      {viewMode === "mission" && <MissionGameplay />}
-      {viewMode === "ar" && <ARView onViewNotes={() => setViewMode("folders")} />}
+      {viewMode === "map" && (
+        <div className="fixed inset-0 pb-16">
+          <MapView onSelectFolder={handleSelectFolder} />
+        </div>
+      )}
+      {viewMode === "mission" && (
+        <div className="fixed inset-0 pb-16 overflow-y-auto">
+          <MissionGameplay />
+        </div>
+      )}
+      {viewMode === "ar" && (
+        <div className="fixed inset-0 pb-16">
+          <ARView onViewNotes={() => setViewMode("folders")} />
+        </div>
+      )}
       {viewMode === "folders" && (
-        <LocationFolders
-          onViewInAR={() => setViewMode("ar")}
-          onSelectFolder={handleSelectFolder}
-        />
+        <div className="fixed inset-0 pb-16 overflow-y-auto">
+          <LocationFolders
+            onViewInAR={() => setViewMode("ar")}
+            onSelectFolder={handleSelectFolder}
+          />
+        </div>
       )}
       {viewMode === "detail" && selectedFolder && (
-        <LocationDetail
-          folder={selectedFolder}
-          onBack={handleBackToFolders}
-          onUpdate={() => {
-            const updated = getAllFolders().find((f) => f.id === selectedFolder.id);
-            if (updated) setSelectedFolder(updated);
-          }}
-        />
+        <div className="fixed inset-0 pb-16 overflow-y-auto">
+          <LocationDetail
+            folder={selectedFolder}
+            onBack={handleBackToFolders}
+            onUpdate={() => {
+              const updated = getAllFolders().find((f) => f.id === selectedFolder.id);
+              if (updated) setSelectedFolder(updated);
+            }}
+          />
+        </div>
       )}
 
       <BottomNav currentView={viewMode} onNavigate={handleNavigation} />
