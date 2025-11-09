@@ -29,7 +29,7 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
   const [currentFolder, setCurrentFolder] = useState<LocationFolder | null>(null);
   const [nearbyFolders, setNearbyFolders] = useState<LocationFolder[]>([]);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-  const [cameraEnabled, setCameraEnabled] = useState(true);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const watchIdRef = useRef<number>(-1);
@@ -224,6 +224,45 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
               <Download className="h-5 w-5" />
             </Button>
           </div>
+        </div>
+
+        {/* Minimap - Current Location Info */}
+        <div className="absolute top-20 left-4 right-4 z-10 flex justify-center">
+          {currentLocation && (
+            <div className="bg-card/90 backdrop-blur-md rounded-lg shadow-lg p-4 max-w-sm w-full">
+              {nearbyFolders.length > 0 ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-card-foreground mb-2">Current Location</h3>
+                  <div className="space-y-2">
+                    {nearbyFolders.slice(0, 2).map((folder) => (
+                      <div key={folder.id} className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-card-foreground">{folder.name}</p>
+                          <p className="text-xs text-muted-foreground">{folder.notes.length} note{folder.notes.length !== 1 ? 's' : ''}</p>
+                        </div>
+                        <Navigation className="h-4 w-4 text-primary" />
+                      </div>
+                    ))}
+                  </div>
+                  {nearbyFolders.length > 2 && (
+                    <p className="text-xs text-muted-foreground mt-2">+{nearbyFolders.length - 2} more nearby</p>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground mb-3">No locations at this spot</p>
+                  <Button
+                    size="sm"
+                    onClick={handleAddNoteClick}
+                    className="rounded-full"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Location
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* AR Location markers */}
