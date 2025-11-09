@@ -532,7 +532,6 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
                 </div>
               </Card>
             )}
-          </div>
         </div>
 
         {/* Location Folders Slide-out Panel */}
