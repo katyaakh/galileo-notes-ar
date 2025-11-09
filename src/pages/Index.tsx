@@ -1,37 +1,49 @@
-import { useState, useEffect } from "react";
-import { PermissionsScreen } from "@/components/PermissionsScreen";
+import { useState } from "react";
 import { ARView } from "@/components/ARView";
-import { NotesList } from "@/components/NotesList";
-
-type ViewMode = "permissions" | "ar" | "list";
+import { LocationFolders } from "@/components/LocationFolders";
+import { LocationDetail } from "@/components/LocationDetail";
+import { PermissionsScreen } from "@/components/PermissionsScreen";
+import { type LocationFolder } from "@/lib/geolocation";
 
 const Index = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>("permissions");
+  const [viewMode, setViewMode] = useState<"permissions" | "ar" | "folders" | "detail">("permissions");
+  const [selectedFolder, setSelectedFolder] = useState<LocationFolder | null>(null);
 
-  useEffect(() => {
-    // Check if permissions were previously granted
-    const checkPermissions = async () => {
-      try {
-        const permissionStatus = await navigator.permissions.query({ name: "geolocation" as PermissionName });
-        if (permissionStatus.state === "granted") {
-          setViewMode("ar");
-        }
-      } catch (error) {
-        // If permissions API not available, stay on permissions screen
-      }
-    };
+  const handleSelectFolder = (folder: LocationFolder) => {
+    setSelectedFolder(folder);
+    setViewMode("detail");
+  };
 
-    checkPermissions();
-  }, []);
+  const handleBackToFolders = () => {
+    setSelectedFolder(null);
+    setViewMode("folders");
+  };
 
   return (
-    <>
+    <div className="min-h-screen">
       {viewMode === "permissions" && (
         <PermissionsScreen onPermissionsGranted={() => setViewMode("ar")} />
       )}
-      {viewMode === "ar" && <ARView onViewNotes={() => setViewMode("list")} />}
-      {viewMode === "list" && <NotesList onViewInAR={() => setViewMode("ar")} />}
-    </>
+      {viewMode === "ar" && <ARView onViewNotes={() => setViewMode("folders")} />}
+      {viewMode === "folders" && (
+        <LocationFolders
+          onViewInAR={() => setViewMode("ar")}
+          onSelectFolder={handleSelectFolder}
+        />
+      )}
+      {viewMode === "detail" && selectedFolder && (
+        <LocationDetail
+          folder={selectedFolder}
+          onBack={handleBackToFolders}
+          onUpdate={() => {
+            // Refresh folder data
+            const { getAllFolders } = require("@/lib/geolocation");
+            const updated = getAllFolders().find((f: LocationFolder) => f.id === selectedFolder.id);
+            if (updated) setSelectedFolder(updated);
+          }}
+        />
+      )}
+    </div>
   );
 };
 

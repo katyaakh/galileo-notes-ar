@@ -1,13 +1,15 @@
 import { Bell } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import type { LocationNote } from "@/lib/geolocation";
+import type { LocationFolder } from "@/lib/geolocation";
 
 interface ProximityAlertProps {
-  notes: LocationNote[];
+  folders: LocationFolder[];
 }
 
-export const ProximityAlert = ({ notes }: ProximityAlertProps) => {
-  if (notes.length === 0) return null;
+export const ProximityAlert = ({ folders }: ProximityAlertProps) => {
+  if (folders.length === 0) return null;
+
+  const totalNotes = folders.reduce((sum, folder) => sum + folder.notes.length, 0);
 
   return (
     <div className="absolute top-20 left-4 right-4 z-40">
@@ -16,10 +18,10 @@ export const ProximityAlert = ({ notes }: ProximityAlertProps) => {
           <Bell className="h-5 w-5 text-secondary-foreground animate-pulse mt-0.5" />
           <div className="flex-1">
             <h4 className="font-semibold text-secondary-foreground mb-1">
-              {notes.length} {notes.length === 1 ? "Note" : "Notes"} Nearby
+              {folders.length} {folders.length === 1 ? "Location" : "Locations"} Nearby
             </h4>
             <p className="text-sm text-secondary-foreground/80">
-              You're close to a location you've tagged before
+              {totalNotes} {totalNotes === 1 ? "note" : "notes"} at nearby locations
             </p>
           </div>
         </div>

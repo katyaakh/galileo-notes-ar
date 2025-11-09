@@ -8,8 +8,8 @@ import {
   watchGeolocation,
   clearGeolocationWatch,
   type LocationCoordinates,
-  getNearbyNotes,
-  type LocationNote,
+  getNearbyFolders,
+  type LocationFolder,
 } from "@/lib/geolocation";
 import { toast } from "sonner";
 
@@ -20,7 +20,7 @@ interface ARViewProps {
 export const ARView = ({ onViewNotes }: ARViewProps) => {
   const [currentLocation, setCurrentLocation] = useState<LocationCoordinates | null>(null);
   const [showNoteForm, setShowNoteForm] = useState(false);
-  const [nearbyNotes, setNearbyNotes] = useState<LocationNote[]>([]);
+  const [nearbyFolders, setNearbyFolders] = useState<LocationFolder[]>([]);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -58,8 +58,8 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
     watchIdRef.current = watchGeolocation(
       (coords) => {
         setCurrentLocation(coords);
-        const nearby = getNearbyNotes(coords.latitude, coords.longitude);
-        setNearbyNotes(nearby);
+        const nearby = getNearbyFolders(coords.latitude, coords.longitude);
+        setNearbyFolders(nearby);
       },
       (error) => {
         toast.error(`Location error: ${error.message}`);
@@ -82,13 +82,17 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
     }
   }, [cameraStream]);
 
-  const handleNoteSaved = () => {
-    setShowNoteForm(false);
-    toast.success("Note saved at current location!");
-    // Refresh nearby notes
+  const handleNoteSaved = (noteText: string) => {
     if (currentLocation) {
-      const nearby = getNearbyNotes(currentLocation.latitude, currentLocation.longitude);
-      setNearbyNotes(nearby);
+      const { findOrCreateFolder, addNoteToFolder } = require("@/lib/geolocation");
+      const folder = findOrCreateFolder(currentLocation);
+      addNoteToFolder(folder.id, noteText);
+      setShowNoteForm(false);
+      toast.success("Note saved to location folder!");
+      
+      // Refresh nearby folders
+      const nearby = getNearbyFolders(currentLocation.latitude, currentLocation.longitude);
+      setNearbyFolders(nearby);
     }
   };
 
@@ -190,17 +194,18 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
           </div>
         </div>
 
-        {/* AR Note markers */}
+        {/* AR Location markers */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          {nearbyNotes.map((note) => (
+          {nearbyFolders.map((folder) => (
             <div
-              key={note.id}
+              key={folder.id}
               className="absolute bg-primary/90 backdrop-blur-md px-4 py-2 rounded-lg shadow-lg animate-pulse"
               style={{
                 transform: "translate(-50%, -50%)",
               }}
             >
-              <p className="text-primary-foreground text-sm font-medium">{note.note}</p>
+              <p className="text-primary-foreground text-sm font-medium">{folder.name}</p>
+              <p className="text-primary-foreground/80 text-xs">{folder.notes.length} notes</p>
             </div>
           ))}
         </div>
@@ -235,8 +240,8 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
       )}
 
       {/* Proximity alerts */}
-      {nearbyNotes.length > 0 && (
-        <ProximityAlert notes={nearbyNotes} />
+      {nearbyFolders.length > 0 && (
+        <ProximityAlert folders={nearbyFolders} />
       )}
     </div>
   );

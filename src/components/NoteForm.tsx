@@ -2,33 +2,22 @@ import { useState } from "react";
 import { MapPin, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { saveNote, type LocationCoordinates } from "@/lib/geolocation";
+import { type LocationCoordinates } from "@/lib/geolocation";
 
 interface NoteFormProps {
   currentLocation: LocationCoordinates;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (noteText: string) => void;
 }
 
 export const NoteForm = ({ currentLocation, onClose, onSave }: NoteFormProps) => {
   const [noteText, setNoteText] = useState("");
-  const [locationGroup, setLocationGroup] = useState("");
 
   const handleSave = () => {
     if (!noteText.trim()) return;
-
-    saveNote({
-      id: crypto.randomUUID(),
-      coordinates: currentLocation,
-      note: noteText,
-      locationGroup: locationGroup.trim() || undefined,
-      createdAt: Date.now(),
-    });
-
-    onSave();
+    onSave(noteText);
   };
 
   return (
@@ -52,16 +41,6 @@ export const NoteForm = ({ currentLocation, onClose, onSave }: NoteFormProps) =>
               <p>Alt: {currentLocation.altitude.toFixed(0)}m</p>
             )}
             <p className="text-xs mt-1">Accuracy: ±{currentLocation.accuracy.toFixed(0)}m</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="location-group">Location Group (Optional)</Label>
-            <Input
-              id="location-group"
-              placeholder="e.g., Home, Office, Park"
-              value={locationGroup}
-              onChange={(e) => setLocationGroup(e.target.value)}
-            />
           </div>
 
           <div className="space-y-2">
