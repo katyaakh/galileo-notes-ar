@@ -1,13 +1,37 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useEffect } from "react";
+import { PermissionsScreen } from "@/components/PermissionsScreen";
+import { ARView } from "@/components/ARView";
+import { NotesList } from "@/components/NotesList";
+
+type ViewMode = "permissions" | "ar" | "list";
 
 const Index = () => {
+  const [viewMode, setViewMode] = useState<ViewMode>("permissions");
+
+  useEffect(() => {
+    // Check if permissions were previously granted
+    const checkPermissions = async () => {
+      try {
+        const permissionStatus = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+        if (permissionStatus.state === "granted") {
+          setViewMode("ar");
+        }
+      } catch (error) {
+        // If permissions API not available, stay on permissions screen
+      }
+    };
+
+    checkPermissions();
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      {viewMode === "permissions" && (
+        <PermissionsScreen onPermissionsGranted={() => setViewMode("ar")} />
+      )}
+      {viewMode === "ar" && <ARView onViewNotes={() => setViewMode("list")} />}
+      {viewMode === "list" && <NotesList onViewInAR={() => setViewMode("ar")} />}
+    </>
   );
 };
 
