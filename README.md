@@ -4,7 +4,7 @@
 
 GeoTagger is a sophisticated location-based note-taking and environmental monitoring application that combines geospatial technology, augmented reality, satellite data analysis, and weather tracking to provide a comprehensive field documentation tool.
 
-![GeoTagger Permissions Screen](https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=400&fit=crop)
+![GeoTagger Permissions Screen](/screenshots/permissions-screen.png)
 
 ---
 
@@ -238,7 +238,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ## 📱 Screenshots & Screens
 
 ### 1. Permissions Screen
-![Permissions Screen](https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=400&fit=crop)
+![Permissions Screen](/screenshots/permissions-screen.png)
 
 **Purpose**: Request necessary permissions for app functionality
 - Location access for GPS tagging
@@ -248,7 +248,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ---
 
 ### 2. Map View
-![Map View](https://images.unsplash.com/photo-1569163139394-de4798aa62b5?w=800&h=400&fit=crop)
+![Map View](/screenshots/map-view.png)
 
 **Features**:
 - Interactive Mapbox map (Street/Satellite toggle)
@@ -264,7 +264,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ---
 
 ### 3. Locations Panel (Slide-out)
-![Locations Panel](https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=400&fit=crop)
+![Locations Panel](/screenshots/locations-panel.png)
 
 **Features**:
 - List of all location folders
@@ -282,7 +282,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ---
 
 ### 4. Add Location Mode
-![Add Location](https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=800&h=400&fit=crop)
+![Add Location](/screenshots/add-location.png)
 
 **Features**:
 - Draggable marker on map
@@ -296,7 +296,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ---
 
 ### 5. Satellite Data Indicators
-![Satellite Data](https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop)
+![Satellite Data](/screenshots/satellite-data.png)
 
 **Features**:
 - NDVI card with:
@@ -312,7 +312,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ---
 
 ### 6. AR View
-![AR View](https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=800&h=400&fit=crop)
+![AR View](/screenshots/ar-view.png)
 
 **Features**:
 - Camera view (optional)
@@ -326,7 +326,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ---
 
 ### 7. Location Detail View
-![Location Detail](https://images.unsplash.com/photo-1562883676-8c7feb83f09b?w=800&h=400&fit=crop)
+![Location Detail](/screenshots/location-detail.png)
 
 **Features**:
 - Location header with name and coordinates
@@ -339,7 +339,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ---
 
 ### 8. Weather Layers Panel
-![Weather Layers](https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=800&h=400&fit=crop)
+![Weather Layers](/screenshots/weather-layers.png)
 
 **Features**:
 - Toggle switches for:
@@ -353,7 +353,7 @@ Period Filter: [7 days] [10 days] [14 days] [30 days]
 ---
 
 ### 9. Data Overlays Panel
-![Data Overlays](https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=400&fit=crop)
+![Data Overlays](/screenshots/data-overlays.png)
 
 **Features**:
 - NDVI overlay toggle (green indicator)
