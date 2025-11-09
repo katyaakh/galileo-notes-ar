@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Satellite, Calendar, Plus } from "lucide-react";
+import { MapPin, Satellite, Calendar, Plus, Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
   const [folders] = useState<LocationFolder[]>(getAllFolders());
   const [selectedFolder, setSelectedFolder] = useState<LocationFolder | null>(null);
   const [isLoadingSatellite, setIsLoadingSatellite] = useState(false);
+  const [mapStyle, setMapStyle] = useState<"streets" | "satellite">("streets");
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
@@ -101,6 +102,24 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
     });
   }, [folders]);
 
+  // Toggle map style
+  const toggleMapStyle = () => {
+    if (!map.current) return;
+
+    const newStyle = mapStyle === "streets" ? "satellite" : "streets";
+    const styleUrl = newStyle === "streets" 
+      ? "mapbox://styles/mapbox/streets-v12" 
+      : "mapbox://styles/mapbox/satellite-streets-v12";
+
+    map.current.setStyle(styleUrl);
+    setMapStyle(newStyle);
+
+    // Re-add markers after style loads
+    map.current.once("styledata", () => {
+      // Markers persist across style changes, no need to re-add
+    });
+  };
+
   const handleFetchSatellite = async (folder: LocationFolder) => {
     setIsLoadingSatellite(true);
     try {
@@ -121,10 +140,34 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
     <div className="h-full bg-background">
       <div className="grid md:grid-cols-2 gap-0 h-full">
         {/* Mapbox Map */}
-        <div 
-          ref={mapContainer} 
-          className="relative min-h-[400px] md:min-h-full border-r"
-        />
+        <div className="relative min-h-[400px] md:min-h-full border-r">
+          <div 
+            ref={mapContainer} 
+            className="absolute inset-0"
+          />
+          
+          {/* Map Style Toggle */}
+          <div className="absolute top-4 left-4 z-10">
+            <Button
+              onClick={toggleMapStyle}
+              variant="secondary"
+              size="sm"
+              className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+            >
+              {mapStyle === "streets" ? (
+                <>
+                  <Satellite className="h-4 w-4" />
+                  Satellite
+                </>
+              ) : (
+                <>
+                  <MapIcon className="h-4 w-4" />
+                  Streets
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
 
         {/* Location Folders Sidebar */}
         <div className="overflow-y-auto h-full">
