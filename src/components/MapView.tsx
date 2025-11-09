@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Satellite, Calendar, Plus, Map as MapIcon, Cloud, Thermometer, Wind, Droplets, Layers } from "lucide-react";
+import { MapPin, Satellite, Calendar, Plus, Map as MapIcon, Cloud, Thermometer, Wind, Droplets, Layers, FolderOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +38,7 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
   const [mapStyle, setMapStyle] = useState<"streets" | "satellite">("streets");
   const [showWeatherPanel, setShowWeatherPanel] = useState(false);
   const [showDataPanel, setShowDataPanel] = useState(false);
+  const [showFoldersPanel, setShowFoldersPanel] = useState(false);
   const [weatherLayers, setWeatherLayers] = useState({
     precipitation: false,
     temperature: false,
@@ -363,58 +364,68 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
   };
 
   return (
-    <div className="h-full bg-background">
-      <div className="grid md:grid-cols-2 gap-0 h-full">
-        {/* Mapbox Map */}
-        <div className="relative min-h-[400px] md:min-h-full border-r">
-          <div 
-            ref={mapContainer} 
-            className="absolute inset-0"
-          />
-          
-          {/* Map Controls */}
-          <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-            {/* Style Toggle */}
-            <Button
-              onClick={toggleMapStyle}
-              variant="secondary"
-              size="sm"
-              className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
-            >
-              {mapStyle === "streets" ? (
-                <>
-                  <Satellite className="h-4 w-4" />
-                  Satellite
-                </>
-              ) : (
-                <>
-                  <MapIcon className="h-4 w-4" />
-                  Streets
-                </>
-              )}
-            </Button>
+    <div className="h-full bg-background relative">
+      {/* Full Width Map */}
+      <div className="absolute inset-0">
+        <div 
+          ref={mapContainer} 
+          className="absolute inset-0"
+        />
+        
+        {/* Map Controls - Left Side */}
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+          {/* Style Toggle */}
+          <Button
+            onClick={toggleMapStyle}
+            variant="secondary"
+            size="sm"
+            className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+          >
+            {mapStyle === "streets" ? (
+              <>
+                <Satellite className="h-4 w-4" />
+                Satellite
+              </>
+            ) : (
+              <>
+                <MapIcon className="h-4 w-4" />
+                Streets
+              </>
+            )}
+          </Button>
 
-            {/* Weather Panel Toggle */}
-            <Button
-              onClick={() => setShowWeatherPanel(!showWeatherPanel)}
-              variant="secondary"
-              size="sm"
-              className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
-            >
-              <Cloud className="h-4 w-4" />
-              Weather
-            </Button>
+          {/* Weather Panel Toggle */}
+          <Button
+            onClick={() => setShowWeatherPanel(!showWeatherPanel)}
+            variant="secondary"
+            size="sm"
+            className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+          >
+            <Cloud className="h-4 w-4" />
+            Weather
+          </Button>
 
-            {/* Data Overlays Toggle */}
-            <Button
-              onClick={() => setShowDataPanel(!showDataPanel)}
-              variant="secondary"
-              size="sm"
-              className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
-            >
-              <Layers className="h-4 w-4" />
-              Data
-            </Button>
+          {/* Data Overlays Toggle */}
+          <Button
+            onClick={() => setShowDataPanel(!showDataPanel)}
+            variant="secondary"
+            size="sm"
+            className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+          >
+            <Layers className="h-4 w-4" />
+            Data
+          </Button>
+
+          {/* Location Folders Toggle */}
+          <Button
+            onClick={() => setShowFoldersPanel(!showFoldersPanel)}
+            variant="secondary"
+            size="sm"
+            className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+          >
+            <FolderOpen className="h-4 w-4" />
+            Locations
+          </Button>
 
             {/* Weather Layers Panel */}
             {showWeatherPanel && (
@@ -474,96 +485,7 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
                 </div>
               </Card>
             )}
-          </div>
-        </div>
 
-        {/* Location Folders Sidebar */}
-        <div className="overflow-y-auto h-full">
-          <div className="p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Location Folders</h2>
-              <Badge variant="secondary">{folders.length} locations</Badge>
-            </div>
-
-            {folders.length === 0 ? (
-              <Card className="p-8 text-center">
-                <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No location folders yet</p>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                {folders.map((folder) => (
-                  <Card
-                    key={folder.id}
-                    className={`p-4 cursor-pointer transition-all ${
-                      selectedFolder?.id === folder.id
-                        ? "ring-2 ring-primary shadow-lg"
-                        : "hover:shadow-md"
-                    }`}
-                    onClick={() => setSelectedFolder(folder)}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold mb-1">{folder.name}</h3>
-                          <div className="text-xs text-muted-foreground space-y-1">
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              <span>
-                                {folder.coordinates.latitude.toFixed(6)},{" "}
-                                {folder.coordinates.longitude.toFixed(6)}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>{new Date(folder.updatedAt).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <Badge variant="outline">{folder.notes.length} notes</Badge>
-                      </div>
-
-                      {selectedFolder?.id === folder.id && (
-                        <div className="space-y-3 pt-3 border-t">
-                          {folder.satelliteData && (
-                            <SatelliteOverlay data={folder.satelliteData} />
-                          )}
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleFetchSatellite(folder);
-                              }}
-                              disabled={isLoadingSatellite}
-                              className="flex-1"
-                            >
-                              <Satellite className="h-4 w-4 mr-2" />
-                              {isLoadingSatellite ? "Fetching..." : "Get Data"}
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onSelectFolder(folder);
-                              }}
-                              className="flex-1"
-                            >
-                              <Plus className="h-4 w-4 mr-2" />
-                              View Details
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
             {/* Data Overlays Panel */}
             {showDataPanel && (
               <Card className="bg-card/95 backdrop-blur-md shadow-xl p-3 space-y-3 w-48">
@@ -611,5 +533,119 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
               </Card>
             )}
           </div>
+        </div>
+
+        {/* Location Folders Slide-out Panel */}
+        <div
+          className={`absolute top-0 right-0 bottom-0 w-full md:w-96 bg-background shadow-2xl transform transition-transform duration-300 ease-in-out z-20 ${
+            showFoldersPanel ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
+          <div className="h-full overflow-y-auto">
+            <div className="p-4 space-y-4">
+              <div className="flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur-md py-2 z-10">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold">Location Folders</h2>
+                  <Badge variant="secondary">{folders.length}</Badge>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowFoldersPanel(false)}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
+
+              {folders.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No location folders yet</p>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {folders.map((folder) => (
+                    <Card
+                      key={folder.id}
+                      className={`p-4 cursor-pointer transition-all ${
+                        selectedFolder?.id === folder.id
+                          ? "ring-2 ring-primary shadow-lg"
+                          : "hover:shadow-md"
+                      }`}
+                      onClick={() => {
+                        setSelectedFolder(folder);
+                        if (map.current) {
+                          map.current.flyTo({
+                            center: [folder.coordinates.longitude, folder.coordinates.latitude],
+                            zoom: 15,
+                            duration: 1000,
+                          });
+                        }
+                      }}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold mb-1">{folder.name}</h3>
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                <span>
+                                  {folder.coordinates.latitude.toFixed(6)},{" "}
+                                  {folder.coordinates.longitude.toFixed(6)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>{new Date(folder.updatedAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Badge variant="outline">{folder.notes.length} notes</Badge>
+                        </div>
+
+                        {selectedFolder?.id === folder.id && (
+                          <div className="space-y-3 pt-3 border-t">
+                            {folder.satelliteData && (
+                              <SatelliteOverlay data={folder.satelliteData} />
+                            )}
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleFetchSatellite(folder);
+                                }}
+                                disabled={isLoadingSatellite}
+                                className="flex-1"
+                              >
+                                <Satellite className="h-4 w-4 mr-2" />
+                                {isLoadingSatellite ? "Fetching..." : "Get Data"}
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onSelectFolder(folder);
+                                }}
+                                className="flex-1"
+                              >
+                                <Plus className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
