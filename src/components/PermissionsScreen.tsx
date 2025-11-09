@@ -4,27 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requestGeolocation } from "@/lib/geolocation";
 import { toast } from "sonner";
-
 interface PermissionsScreenProps {
   onPermissionsGranted: () => void;
 }
-
-export const PermissionsScreen = ({ onPermissionsGranted }: PermissionsScreenProps) => {
+export const PermissionsScreen = ({
+  onPermissionsGranted
+}: PermissionsScreenProps) => {
   const [isRequesting, setIsRequesting] = useState(false);
-
   const requestPermissions = async () => {
     setIsRequesting(true);
-
     try {
       // Request location
       await requestGeolocation();
 
       // Request camera
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: {
+          facingMode: "environment"
+        }
       });
-      stream.getTracks().forEach((track) => track.stop());
-
+      stream.getTracks().forEach(track => track.stop());
       toast.success("Permissions granted! Starting AR...");
       onPermissionsGranted();
     } catch (error) {
@@ -33,18 +32,15 @@ export const PermissionsScreen = ({ onPermissionsGranted }: PermissionsScreenPro
       setIsRequesting(false);
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
+  return <div className="min-h-screen bg-gradient-to-b from-background to-muted flex items-center justify-center p-4">
       <Card className="max-w-md w-full p-8 space-y-6">
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-2 mb-4">
             <MapPin className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">AR Notes</h1>
+            <h1 className="text-3xl font-bold">GEO TAGGER</h1>
           </div>
-          <p className="text-muted-foreground">
-            Anchor your thoughts to real-world locations
-          </p>
+          <p className="text-muted-foreground">Anchor your thoughts to real-world locations
+To. start you need to allow:</p>
         </div>
 
         <div className="space-y-4">
@@ -79,12 +75,7 @@ export const PermissionsScreen = ({ onPermissionsGranted }: PermissionsScreenPro
           </div>
         </div>
 
-        <Button
-          onClick={requestPermissions}
-          disabled={isRequesting}
-          size="lg"
-          className="w-full bg-gradient-to-r from-primary to-accent"
-        >
+        <Button onClick={requestPermissions} disabled={isRequesting} size="lg" className="w-full bg-gradient-to-r from-primary to-accent">
           {isRequesting ? "Requesting permissions..." : "Grant Permissions & Start"}
         </Button>
 
@@ -92,6 +83,5 @@ export const PermissionsScreen = ({ onPermissionsGranted }: PermissionsScreenPro
           By continuing, you agree to grant camera and location permissions
         </p>
       </Card>
-    </div>
-  );
+    </div>;
 };
