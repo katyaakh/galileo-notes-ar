@@ -379,7 +379,7 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
             onClick={toggleMapStyle}
             variant="secondary"
             size="sm"
-            className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
           >
             {mapStyle === "streets" ? (
               <>
@@ -399,7 +399,7 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
             onClick={() => setShowWeatherPanel(!showWeatherPanel)}
             variant="secondary"
             size="sm"
-            className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
           >
             <Cloud className="h-4 w-4" />
             Weather
@@ -410,7 +410,7 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
             onClick={() => setShowDataPanel(!showDataPanel)}
             variant="secondary"
             size="sm"
-            className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
           >
             <Layers className="h-4 w-4" />
             Data
@@ -421,7 +421,7 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
             onClick={() => setShowFoldersPanel(!showFoldersPanel)}
             variant="secondary"
             size="sm"
-            className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
           >
             <FolderOpen className="h-4 w-4" />
             Locations
