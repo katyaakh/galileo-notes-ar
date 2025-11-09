@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Camera, Navigation, Plus, List } from "lucide-react";
+import { Camera, Navigation, Plus, List, CameraOff, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import geoTaggerLogo from "@/assets/geotagger-logo.png";
 import { NoteForm } from "@/components/NoteForm";
 import { ProximityAlert } from "@/components/ProximityAlert";
 import {
@@ -21,12 +22,16 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [nearbyNotes, setNearbyNotes] = useState<LocationNote[]>([]);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraEnabled, setCameraEnabled] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const watchIdRef = useRef<number>(-1);
 
   useEffect(() => {
     // Request camera access
     const startCamera = async () => {
+      if (!cameraEnabled) return;
+      
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
@@ -40,7 +45,14 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
       }
     };
 
-    startCamera();
+    if (cameraEnabled) {
+      startCamera();
+    } else {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+        setCameraStream(null);
+      }
+    }
 
     // Start watching location
     watchIdRef.current = watchGeolocation(
@@ -62,7 +74,7 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
         clearGeolocationWatch(watchIdRef.current);
       }
     };
-  }, []);
+  }, [cameraEnabled]);
 
   useEffect(() => {
     if (videoRef.current && cameraStream) {
@@ -80,37 +92,102 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
     }
   };
 
+  const toggleCamera = () => {
+    setCameraEnabled(!cameraEnabled);
+    toast.info(cameraEnabled ? "Camera off" : "Camera on");
+  };
+
+  const takeScreenshot = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `geotagger-${Date.now()}.png`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("Screenshot saved!");
+    });
+  };
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
+      {/* Hidden canvas for screenshots */}
+      <canvas ref={canvasRef} className="hidden" />
+      
       {/* Camera feed */}
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="absolute inset-0 h-full w-full object-cover"
-      />
+      {cameraEnabled ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-muted flex items-center justify-center">
+          <div className="text-center">
+            <CameraOff className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Camera is off</p>
+          </div>
+        </div>
+      )}
 
       {/* AR Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40">
         {/* Top bar */}
         <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 bg-card/80 backdrop-blur-md px-3 py-2 rounded-full">
-            <Navigation className="h-4 w-4 text-primary animate-pulse" />
-            <span className="text-xs font-medium">
-              {currentLocation
-                ? `${currentLocation.accuracy.toFixed(0)}m accuracy`
-                : "Locating..."}
-            </span>
+          <div className="flex items-center gap-2">
+            <img src={geoTaggerLogo} alt="GeoTagger" className="h-10 w-10 rounded-lg" />
+            <div className="flex items-center gap-2 bg-card/80 backdrop-blur-md px-3 py-2 rounded-full">
+              <Navigation className="h-4 w-4 text-primary animate-pulse" />
+              <span className="text-xs font-medium">
+                {currentLocation
+                  ? `${currentLocation.accuracy.toFixed(0)}m accuracy`
+                  : "Locating..."}
+              </span>
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onViewNotes}
-            className="bg-card/80 backdrop-blur-md rounded-full"
-          >
-            <List className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleCamera}
+              className="bg-card/80 backdrop-blur-md rounded-full"
+            >
+              {cameraEnabled ? <Camera className="h-5 w-5" /> : <CameraOff className="h-5 w-5" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={takeScreenshot}
+              disabled={!cameraEnabled}
+              className="bg-card/80 backdrop-blur-md rounded-full"
+            >
+              <Download className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onViewNotes}
+              className="bg-card/80 backdrop-blur-md rounded-full"
+            >
+              <List className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
 
         {/* AR Note markers */}

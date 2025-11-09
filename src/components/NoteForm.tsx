@@ -2,6 +2,8 @@ import { useState } from "react";
 import { MapPin, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { saveNote, type LocationCoordinates } from "@/lib/geolocation";
 
@@ -13,6 +15,7 @@ interface NoteFormProps {
 
 export const NoteForm = ({ currentLocation, onClose, onSave }: NoteFormProps) => {
   const [noteText, setNoteText] = useState("");
+  const [locationGroup, setLocationGroup] = useState("");
 
   const handleSave = () => {
     if (!noteText.trim()) return;
@@ -21,6 +24,7 @@ export const NoteForm = ({ currentLocation, onClose, onSave }: NoteFormProps) =>
       id: crypto.randomUUID(),
       coordinates: currentLocation,
       note: noteText,
+      locationGroup: locationGroup.trim() || undefined,
       createdAt: Date.now(),
     });
 
@@ -40,7 +44,7 @@ export const NoteForm = ({ currentLocation, onClose, onSave }: NoteFormProps) =>
           </Button>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-4">
           <div className="text-sm text-muted-foreground">
             <p>Lat: {currentLocation.latitude.toFixed(6)}</p>
             <p>Lon: {currentLocation.longitude.toFixed(6)}</p>
@@ -50,12 +54,26 @@ export const NoteForm = ({ currentLocation, onClose, onSave }: NoteFormProps) =>
             <p className="text-xs mt-1">Accuracy: ±{currentLocation.accuracy.toFixed(0)}m</p>
           </div>
 
-          <Textarea
-            placeholder="What would you like to remember about this spot?"
-            value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
-            className="min-h-[120px] resize-none"
-          />
+          <div className="space-y-2">
+            <Label htmlFor="location-group">Location Group (Optional)</Label>
+            <Input
+              id="location-group"
+              placeholder="e.g., Home, Office, Park"
+              value={locationGroup}
+              onChange={(e) => setLocationGroup(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="note-text">Note</Label>
+            <Textarea
+              id="note-text"
+              placeholder="What would you like to remember about this spot?"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              className="min-h-[120px] resize-none"
+            />
+          </div>
         </div>
 
         <div className="flex gap-2">

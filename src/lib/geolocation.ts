@@ -10,6 +10,7 @@ export interface LocationNote {
   id: string;
   coordinates: LocationCoordinates;
   note: string;
+  locationGroup?: string;
   createdAt: number;
 }
 
