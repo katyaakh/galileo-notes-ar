@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Satellite, Calendar, Plus, Map as MapIcon, Cloud, Thermometer, Wind, Droplets } from "lucide-react";
+import { MapPin, Satellite, Calendar, Plus, Map as MapIcon, Cloud, Thermometer, Wind, Droplets, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,13 @@ import {
   updateFolderSatelliteData, 
   type LocationFolder 
 } from "@/lib/geolocation";
+import {
+  fetchNDVIData,
+  fetchSoilMoistureData,
+  fetchTemperatureData,
+  generateHeatmapCanvas,
+  type SatelliteDataGrid,
+} from "@/lib/satelliteData";
 import { toast } from "sonner";
 import { SatelliteOverlay } from "./SatelliteOverlay";
 
@@ -30,15 +37,22 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
   const [isLoadingSatellite, setIsLoadingSatellite] = useState(false);
   const [mapStyle, setMapStyle] = useState<"streets" | "satellite">("streets");
   const [showWeatherPanel, setShowWeatherPanel] = useState(false);
+  const [showDataPanel, setShowDataPanel] = useState(false);
   const [weatherLayers, setWeatherLayers] = useState({
     precipitation: false,
     temperature: false,
     wind: false,
     clouds: false,
   });
+  const [dataOverlays, setDataOverlays] = useState({
+    ndvi: false,
+    soilMoisture: false,
+    temperature: false,
+  });
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const dataOverlayRefs = useRef<{ [key: string]: string }>({});
 
   // Initialize map
   useEffect(() => {
@@ -224,6 +238,114 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
     }
   };
 
+  // Data overlay management
+  const toggleDataOverlay = async (overlayType: keyof typeof dataOverlays) => {
+    const newState = !dataOverlays[overlayType];
+    setDataOverlays((prev) => ({ ...prev, [overlayType]: newState }));
+
+    if (!map.current || !selectedFolder) {
+      if (newState && !selectedFolder) {
+        toast.error("Please select a location first");
+        setDataOverlays((prev) => ({ ...prev, [overlayType]: false }));
+      }
+      return;
+    }
+
+    if (newState) {
+      await addDataOverlay(overlayType, selectedFolder);
+    } else {
+      removeDataOverlay(overlayType);
+    }
+  };
+
+  const addDataOverlay = async (
+    overlayType: keyof typeof dataOverlays,
+    folder: LocationFolder
+  ) => {
+    if (!map.current) return;
+
+    try {
+      toast.info(`Loading ${overlayType} data...`);
+
+      let dataGrid: SatelliteDataGrid;
+      let colorScheme: "ndvi" | "moisture" | "temperature";
+
+      switch (overlayType) {
+        case "ndvi":
+          dataGrid = await fetchNDVIData(folder.coordinates.latitude, folder.coordinates.longitude);
+          colorScheme = "ndvi";
+          break;
+        case "soilMoisture":
+          dataGrid = await fetchSoilMoistureData(folder.coordinates.latitude, folder.coordinates.longitude);
+          colorScheme = "moisture";
+          break;
+        case "temperature":
+          dataGrid = await fetchTemperatureData(folder.coordinates.latitude, folder.coordinates.longitude);
+          colorScheme = "temperature";
+          break;
+      }
+
+      // Generate heatmap canvas
+      const canvas = generateHeatmapCanvas(dataGrid, colorScheme);
+      const imageUrl = canvas.toDataURL();
+
+      const sourceId = `data-overlay-${overlayType}`;
+      const layerId = `data-overlay-layer-${overlayType}`;
+
+      // Remove existing if present
+      if (map.current.getLayer(layerId)) {
+        map.current.removeLayer(layerId);
+      }
+      if (map.current.getSource(sourceId)) {
+        map.current.removeSource(sourceId);
+      }
+
+      // Add image source
+      map.current.addSource(sourceId, {
+        type: "image",
+        url: imageUrl,
+        coordinates: [
+          [dataGrid.bounds.west, dataGrid.bounds.north],
+          [dataGrid.bounds.east, dataGrid.bounds.north],
+          [dataGrid.bounds.east, dataGrid.bounds.south],
+          [dataGrid.bounds.west, dataGrid.bounds.south],
+        ],
+      });
+
+      // Add raster layer
+      map.current.addLayer({
+        id: layerId,
+        type: "raster",
+        source: sourceId,
+        paint: {
+          "raster-opacity": 0.65,
+        },
+      });
+
+      dataOverlayRefs.current[overlayType] = sourceId;
+      toast.success(`${overlayType} overlay added`);
+    } catch (error) {
+      toast.error(`Failed to load ${overlayType} data`);
+      console.error(error);
+    }
+  };
+
+  const removeDataOverlay = (overlayType: keyof typeof dataOverlays) => {
+    if (!map.current) return;
+
+    const sourceId = `data-overlay-${overlayType}`;
+    const layerId = `data-overlay-layer-${overlayType}`;
+
+    if (map.current.getLayer(layerId)) {
+      map.current.removeLayer(layerId);
+    }
+    if (map.current.getSource(sourceId)) {
+      map.current.removeSource(sourceId);
+    }
+
+    delete dataOverlayRefs.current[overlayType];
+  };
+
   const handleFetchSatellite = async (folder: LocationFolder) => {
     setIsLoadingSatellite(true);
     try {
@@ -281,6 +403,17 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
             >
               <Cloud className="h-4 w-4" />
               Weather
+            </Button>
+
+            {/* Data Overlays Toggle */}
+            <Button
+              onClick={() => setShowDataPanel(!showDataPanel)}
+              variant="secondary"
+              size="sm"
+              className="gap-2 bg-card/95 backdrop-blur-md shadow-lg hover:shadow-xl transition-all"
+            >
+              <Layers className="h-4 w-4" />
+              Data
             </Button>
 
             {/* Weather Layers Panel */}
@@ -431,6 +564,52 @@ export const MapView = ({ onSelectFolder }: MapViewProps) => {
           </div>
         </div>
       </div>
-    </div>
+            {/* Data Overlays Panel */}
+            {showDataPanel && (
+              <Card className="bg-card/95 backdrop-blur-md shadow-xl p-3 space-y-3 w-48">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="ndvi" className="text-xs font-medium flex items-center gap-1">
+                    <div className="h-3 w-3 rounded-full bg-green-500" />
+                    NDVI
+                  </Label>
+                  <Switch
+                    id="ndvi"
+                    checked={dataOverlays.ndvi}
+                    onCheckedChange={() => toggleDataOverlay("ndvi")}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="soilMoisture" className="text-xs font-medium flex items-center gap-1">
+                    <div className="h-3 w-3 rounded-full bg-blue-500" />
+                    Soil Moisture
+                  </Label>
+                  <Switch
+                    id="soilMoisture"
+                    checked={dataOverlays.soilMoisture}
+                    onCheckedChange={() => toggleDataOverlay("soilMoisture")}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="tempOverlay" className="text-xs font-medium flex items-center gap-1">
+                    <div className="h-3 w-3 rounded-full bg-red-500" />
+                    Temperature
+                  </Label>
+                  <Switch
+                    id="tempOverlay"
+                    checked={dataOverlays.temperature}
+                    onCheckedChange={() => toggleDataOverlay("temperature")}
+                  />
+                </div>
+
+                <div className="pt-2 border-t">
+                  <p className="text-[10px] text-muted-foreground">
+                    {selectedFolder ? "Simulated Copernicus data" : "Select a location first"}
+                  </p>
+                </div>
+              </Card>
+            )}
+          </div>
   );
 };
