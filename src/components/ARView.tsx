@@ -153,10 +153,10 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
       {/* AR Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40">
         {/* Top bar */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
+        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-2">
-            <img src={geoTaggerLogo} alt="GeoTagger" className="h-10 w-10 rounded-lg" />
-            <div className="flex items-center gap-2 bg-card/80 backdrop-blur-md px-3 py-2 rounded-full">
+            <img src={geoTaggerLogo} alt="GeoTagger" className="h-10 w-10 rounded-lg shadow-lg" />
+            <div className="flex items-center gap-2 bg-card/80 backdrop-blur-md px-3 py-2 rounded-full shadow-md">
               <Navigation className="h-4 w-4 text-primary animate-pulse" />
               <span className="text-xs font-medium">
                 {currentLocation
@@ -170,7 +170,7 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
               variant="ghost"
               size="icon"
               onClick={toggleCamera}
-              className="bg-card/80 backdrop-blur-md rounded-full"
+              className="bg-card/80 backdrop-blur-md rounded-full shadow-md hover:bg-card"
             >
               {cameraEnabled ? <Camera className="h-5 w-5" /> : <CameraOff className="h-5 w-5" />}
             </Button>
@@ -179,17 +179,9 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
               size="icon"
               onClick={takeScreenshot}
               disabled={!cameraEnabled}
-              className="bg-card/80 backdrop-blur-md rounded-full"
+              className="bg-card/80 backdrop-blur-md rounded-full shadow-md hover:bg-card disabled:opacity-50"
             >
               <Download className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onViewNotes}
-              className="bg-card/80 backdrop-blur-md rounded-full"
-            >
-              <List className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -210,10 +202,10 @@ export const ARView = ({ onViewNotes }: ARViewProps) => {
           ))}
         </div>
 
-        {/* Bottom controls */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 flex flex-col items-center gap-4">
+        {/* Bottom controls - adjusted for bottom nav */}
+        <div className="absolute bottom-20 left-0 right-0 p-6 flex flex-col items-center gap-4 z-10">
           {currentLocation && (
-            <div className="bg-card/80 backdrop-blur-md px-4 py-2 rounded-full text-xs text-muted-foreground">
+            <div className="bg-card/80 backdrop-blur-md px-4 py-2 rounded-full text-xs text-muted-foreground shadow-md">
               {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
               {currentLocation.altitude && ` • ${currentLocation.altitude.toFixed(0)}m`}
             </div>
